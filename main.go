@@ -53,6 +53,10 @@ func main() {
 	v1Router.Get("/ready", handlerReadiness)
 	v1Router.Get("/err", handlerError)
 	v1Router.Post("/users", apiCfg.handlerCreateUsers)
+	v1Router.Post("/seminar", apiCfg.handlerCreateSeminar)
+	v1Router.Post("/question/{userId}/{seminarId}", apiCfg.handlerCreateQuestion)
+	v1Router.Get("/question/{userId}/{seminarId}", apiCfg.handlerGetAllQuestions)
+
 	router.Mount("/v1", v1Router)
 
 	srv := &http.Server{
