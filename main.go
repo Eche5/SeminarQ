@@ -2,23 +2,44 @@ package main
 
 import (
 	"fmt"
+	"github.com/Eche5/SeminarQ/internal/database"
 	"log"
 	"net/http"
 	"os"
 
+	"database/sql"
 	"github.com/go-chi/chi"
 	"github.com/go-chi/cors"
 	"github.com/joho/godotenv"
+	_ "github.com/lib/pq"
 )
+
+type apiConfig struct {
+	DB *database.Queries
+}
 
 func main() {
 	godotenv.Load(".env")
 	portString := os.Getenv("PORT")
 	if portString == "" {
 		log.Fatal("PORT is not found in the environment")
-
 	}
+
+	dBURL := os.Getenv("DB_URL")
+	if dBURL == "" {
+		log.Fatal("DB_URL is not found in the environment")
+	}
+	conn, err := sql.Open("postgres", dBURL)
+	if err != nil {
+		log.Fatal("can't connect to database")
+	}
+
+	apiCfg := apiConfig{
+		DB: database.New(conn),
+	}
+
 	router := chi.NewRouter()
+
 	router.Use(cors.Handler(cors.Options{
 		AllowedOrigins:   []string{"https://*", "http://*"},
 		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
@@ -31,7 +52,7 @@ func main() {
 	v1Router := chi.NewRouter()
 	v1Router.Get("/ready", handlerReadiness)
 	v1Router.Get("/err", handlerError)
-
+	v1Router.Post("/users", apiCfg.handlerCreateUsers)
 	router.Mount("/v1", v1Router)
 
 	srv := &http.Server{
@@ -40,7 +61,7 @@ func main() {
 	}
 	fmt.Printf("Server running on PORT %v\n", portString)
 
-	err := srv.ListenAndServe()
+	err = srv.ListenAndServe()
 	if err != nil {
 		log.Fatal(err)
 	}
