@@ -2,12 +2,14 @@ package main
 
 import (
 	"fmt"
-	"github.com/Eche5/SeminarQ/internal/database"
 	"log"
 	"net/http"
 	"os"
 
+	"github.com/Eche5/SeminarQ/internal/database"
+
 	"database/sql"
+
 	"github.com/go-chi/chi"
 	"github.com/go-chi/cors"
 	"github.com/joho/godotenv"
@@ -19,6 +21,8 @@ type apiConfig struct {
 }
 
 func main() {
+
+	
 	godotenv.Load(".env")
 	portString := os.Getenv("PORT")
 	if portString == "" {
@@ -54,10 +58,14 @@ func main() {
 	v1Router.Get("/err", handlerError)
 	v1Router.Post("/users", apiCfg.handlerCreateUsers)
 	v1Router.Post("/seminar", apiCfg.handlerCreateSeminar)
+	v1Router.Get("/seminar/{apiKey}", apiCfg.handlerGetSeminarByAPIKey)
+
 	v1Router.Post("/question/{userId}/{seminarId}", apiCfg.handlerCreateQuestion)
 	v1Router.Get("/question/{userId}/{seminarId}", apiCfg.handlerGetAllQuestions)
-	v1Router.Post("/login", apiCfg.handlerLoginUser)
 
+	v1Router.Get("/seminars/{userId}", apiCfg.handlerGetAllSeminars)
+
+	v1Router.Post("/login", apiCfg.handlerLoginUser)
 
 	router.Mount("/v1", v1Router)
 

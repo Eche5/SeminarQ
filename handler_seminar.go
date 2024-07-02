@@ -7,12 +7,13 @@ import (
 	"time"
 
 	"github.com/Eche5/SeminarQ/internal/database"
+	"github.com/go-chi/chi"
 	"github.com/google/uuid"
 )
 
 func (apiCfg apiConfig) handlerCreateSeminar(w http.ResponseWriter, r *http.Request) {
 	type parameters struct {
-		Name string `json:"name"`
+		Name   string `json:"name"`
 		UserID string `json:"user_id"`
 	}
 	decoder := json.NewDecoder(r.Body)
@@ -23,22 +24,55 @@ func (apiCfg apiConfig) handlerCreateSeminar(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-		userID, err := uuid.Parse(params.UserID)
+	userID, err := uuid.Parse(params.UserID)
 	if err != nil {
 		respondWithError(w, http.StatusBadRequest, fmt.Sprintf("invalid user_id: %v", err))
 		return
 	}
-	seminar,err:=apiCfg.DB.CreateSeminar(r.Context(), database.CreateSeminarParams{
+	seminar, err := apiCfg.DB.CreateSeminar(r.Context(), database.CreateSeminarParams{
 		ID:        uuid.New(),
 		CreatedAt: time.Now().UTC(),
 		UpdatedAt: time.Now().UTC(),
 		Name:      params.Name,
 		UserID:    userID,
 	})
-	if err !=nil{
-		respondWithError(w,400,fmt.Sprintf("something went wrong: %v",err))
+	if err != nil {
+		respondWithError(w, 400, fmt.Sprintf("something went wrong: %v", err))
 		return
 	}
 	respondWithJson(w, 201, databaseSeminarToSeminar(seminar))
 
+}
+
+func (apiCfg apiConfig) handlerGetAllSeminars(w http.ResponseWriter, r *http.Request) {
+
+	userIdStr := chi.URLParam(r, "userId")
+	userId, err := uuid.Parse(userIdStr)
+
+	if err != nil {
+		respondWithError(w, http.StatusBadRequest, fmt.Sprintf("invalid user id %v", err))
+		return
+	}
+	seminars, err := apiCfg.DB.GetAllSeminars(r.Context(), userId)
+	if err != nil {
+		respondWithError(w, http.StatusBadRequest, fmt.Sprintf("error:%v", err))
+		return
+	}
+	respondWithJson(w, http.StatusOK, databaseSeminarToSeminarArray(seminars))
+}
+
+func (apiCfg apiConfig) handlerGetSeminarByAPIKey(w http.ResponseWriter, r *http.Request) {
+	apiKey := chi.URLParam(r, "apiKey")
+
+	seminar, err := apiCfg.DB.GetAllSeminarsByAPIKey(r.Context(), apiKey)
+	if err != nil {
+		respondWithError(w, http.StatusNotFound, fmt.Sprintf("Something went wrong: %v", err))
+		return
+	}
+	var result []Seminar
+	for _, seminar := range seminar {
+		result = append(result, databaseSeminarToSeminar(seminar))
+	}
+
+	respondWithJson(w, http.StatusOK, result)
 }

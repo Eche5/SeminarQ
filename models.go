@@ -75,3 +75,11 @@ func databaseQuestionToQuestionArray(dbBases []database.Question)[]Question{
 	}
 	return questions
 }
+
+func databaseSeminarToSeminarArray(dbBases []database.Seminar)[]Seminar{
+	seminars := []Seminar{}
+	for _, dbBase :=range dbBases{
+		seminars = append(seminars, databaseSeminarToSeminar(dbBase))
+	}
+	return seminars
+}

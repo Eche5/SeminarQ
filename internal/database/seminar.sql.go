@@ -45,3 +45,71 @@ func (q *Queries) CreateSeminar(ctx context.Context, arg CreateSeminarParams) (S
 	)
 	return i, err
 }
+
+const getAllSeminars = `-- name: GetAllSeminars :many
+SELECT id, created_at, updated_at, name, api_key, user_id FROM seminar WHERE user_id = $1
+`
+
+func (q *Queries) GetAllSeminars(ctx context.Context, userID uuid.UUID) ([]Seminar, error) {
+	rows, err := q.db.QueryContext(ctx, getAllSeminars, userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Seminar
+	for rows.Next() {
+		var i Seminar
+		if err := rows.Scan(
+			&i.ID,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.Name,
+			&i.ApiKey,
+			&i.UserID,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getAllSeminarsByAPIKey = `-- name: GetAllSeminarsByAPIKey :many
+SELECT id, created_at, updated_at, name, api_key, user_id FROM seminar WHERE api_key = $1
+`
+
+func (q *Queries) GetAllSeminarsByAPIKey(ctx context.Context, apiKey string) ([]Seminar, error) {
+	rows, err := q.db.QueryContext(ctx, getAllSeminarsByAPIKey, apiKey)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Seminar
+	for rows.Next() {
+		var i Seminar
+		if err := rows.Scan(
+			&i.ID,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.Name,
+			&i.ApiKey,
+			&i.UserID,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
