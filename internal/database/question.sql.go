@@ -50,16 +50,11 @@ func (q *Queries) CreateQuestion(ctx context.Context, arg CreateQuestionParams) 
 }
 
 const getAllQuestion = `-- name: GetAllQuestion :many
-SELECT id, created_at, updated_at, user_id, seminar_id, question FROM question WHERE seminar_id = $1 AND user_id = $2
+SELECT id, created_at, updated_at, user_id, seminar_id, question FROM question WHERE seminar_id = $1
 `
 
-type GetAllQuestionParams struct {
-	SeminarID uuid.UUID
-	UserID    uuid.UUID
-}
-
-func (q *Queries) GetAllQuestion(ctx context.Context, arg GetAllQuestionParams) ([]Question, error) {
-	rows, err := q.db.QueryContext(ctx, getAllQuestion, arg.SeminarID, arg.UserID)
+func (q *Queries) GetAllQuestion(ctx context.Context, seminarID uuid.UUID) ([]Question, error) {
+	rows, err := q.db.QueryContext(ctx, getAllQuestion, seminarID)
 	if err != nil {
 		return nil, err
 	}

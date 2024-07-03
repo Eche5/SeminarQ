@@ -5,4 +5,4 @@ VALUES ($1, $2, $3, $4, $5, $6)
 RETURNING *;
 
 -- name: GetAllQuestion :many
-SELECT * FROM question WHERE seminar_id = $1 AND user_id = $2;
+SELECT * FROM question WHERE seminar_id = $1;

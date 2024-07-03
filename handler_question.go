@@ -97,25 +97,16 @@ func (apiCfg apiConfig) handlerGetAllQuestions(w http.ResponseWriter, r *http.Re
 		respondWithError(w, http.StatusBadRequest, fmt.Sprintf("invalid seminar id %v", err))
 		return
 	}
-	userIdStr := chi.URLParam(r, "userId")
-	userId, err := uuid.Parse(userIdStr)
 
-	if err != nil {
-		respondWithError(w, http.StatusBadRequest, fmt.Sprintf("invalid seminar id %v", err))
-		return
-	}
 
 	// Check if the request is a WebSocket upgrade request
 	if websocket.IsWebSocketUpgrade(r) {
-		handleWebSocket(apiCfg, w, r, userId, seminarId)
+		handleWebSocket(apiCfg, w, r, seminarId)
 		return
 	}
 
 	// Handle normal HTTP GET request
-	questions, err := apiCfg.DB.GetAllQuestion(r.Context(), database.GetAllQuestionParams{
-		SeminarID: seminarId,
-		UserID:    userId,
-	})
+	questions, err := apiCfg.DB.GetAllQuestion(r.Context(), seminarId)
 	if err != nil {
 		respondWithError(w, http.StatusBadRequest, fmt.Sprintf("error:%v", err))
 		return
@@ -123,7 +114,7 @@ func (apiCfg apiConfig) handlerGetAllQuestions(w http.ResponseWriter, r *http.Re
 	respondWithJson(w, http.StatusOK, databaseQuestionToQuestionArray(questions))
 }
 
-func handleWebSocket(apiCfg apiConfig, w http.ResponseWriter, r *http.Request, userId uuid.UUID, seminarId uuid.UUID) {
+func handleWebSocket(apiCfg apiConfig, w http.ResponseWriter, r *http.Request, seminarId uuid.UUID) {
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		log.Println(err)
@@ -144,10 +135,7 @@ func handleWebSocket(apiCfg apiConfig, w http.ResponseWriter, r *http.Request, u
 	}()
 
 	// Send initial data to client
-	questions, err := apiCfg.DB.GetAllQuestion(r.Context(), database.GetAllQuestionParams{
-		SeminarID: seminarId,
-		UserID:    userId,
-	})
+	questions, err := apiCfg.DB.GetAllQuestion(r.Context(),seminarId)
 	if err != nil {
 		log.Println(err)
 		return
