@@ -16,7 +16,7 @@ const createQuestion = `-- name: CreateQuestion :one
 
 INSERT INTO question (id, created_at, updated_at, seminar_id, question)
 VALUES ($1, $2, $3, $4, $5)
-RETURNING id, created_at, updated_at, user_id, seminar_id, question
+RETURNING id, created_at, updated_at, seminar_id, question
 `
 
 type CreateQuestionParams struct {
@@ -40,7 +40,6 @@ func (q *Queries) CreateQuestion(ctx context.Context, arg CreateQuestionParams) 
 		&i.ID,
 		&i.CreatedAt,
 		&i.UpdatedAt,
-		&i.UserID,
 		&i.SeminarID,
 		&i.Question,
 	)
@@ -48,7 +47,7 @@ func (q *Queries) CreateQuestion(ctx context.Context, arg CreateQuestionParams) 
 }
 
 const getAllQuestion = `-- name: GetAllQuestion :many
-SELECT id, created_at, updated_at, user_id, seminar_id, question FROM question WHERE seminar_id = $1
+SELECT id, created_at, updated_at, seminar_id, question FROM question WHERE seminar_id = $1
 `
 
 func (q *Queries) GetAllQuestion(ctx context.Context, seminarID uuid.UUID) ([]Question, error) {
@@ -64,7 +63,6 @@ func (q *Queries) GetAllQuestion(ctx context.Context, seminarID uuid.UUID) ([]Qu
 			&i.ID,
 			&i.CreatedAt,
 			&i.UpdatedAt,
-			&i.UserID,
 			&i.SeminarID,
 			&i.Question,
 		); err != nil {

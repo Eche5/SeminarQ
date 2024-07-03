@@ -51,7 +51,6 @@ type Question struct {
 	ID        uuid.UUID `json:"id"`
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
-	UserID    uuid.UUID `json:"user_id"`
 	SeminarID uuid.UUID `json:"seminar_id"`
 	Question  string    `json:"question"`
 }
@@ -61,7 +60,6 @@ func databaseQuestionToQuestion(dbBase database.Question) Question {
 		ID:        dbBase.ID,
 		CreatedAt: dbBase.CreatedAt,
 		UpdatedAt: dbBase.UpdatedAt,
-		UserID:    dbBase.UserID,
 		SeminarID: dbBase.SeminarID,
 		Question:  dbBase.Question,
 	}

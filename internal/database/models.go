@@ -14,7 +14,6 @@ type Question struct {
 	ID        uuid.UUID
 	CreatedAt time.Time
 	UpdatedAt time.Time
-	UserID    uuid.UUID
 	SeminarID uuid.UUID
 	Question  string
 }
