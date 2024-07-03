@@ -14,8 +14,8 @@ import (
 
 const createQuestion = `-- name: CreateQuestion :one
 
-INSERT INTO question (id, created_at, updated_at, user_id, seminar_id, question)
-VALUES ($1, $2, $3, $4, $5, $6)
+INSERT INTO question (id, created_at, updated_at, seminar_id, question)
+VALUES ($1, $2, $3, $4, $5)
 RETURNING id, created_at, updated_at, user_id, seminar_id, question
 `
 
@@ -23,7 +23,6 @@ type CreateQuestionParams struct {
 	ID        uuid.UUID
 	CreatedAt time.Time
 	UpdatedAt time.Time
-	UserID    uuid.UUID
 	SeminarID uuid.UUID
 	Question  string
 }
@@ -33,7 +32,6 @@ func (q *Queries) CreateQuestion(ctx context.Context, arg CreateQuestionParams) 
 		arg.ID,
 		arg.CreatedAt,
 		arg.UpdatedAt,
-		arg.UserID,
 		arg.SeminarID,
 		arg.Question,
 	)

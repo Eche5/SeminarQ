@@ -50,19 +50,12 @@ func (apiCfg apiConfig) handlerCreateQuestion(w http.ResponseWriter, r *http.Req
 		respondWithError(w, http.StatusBadRequest, fmt.Sprintf("invalid seminar id %v", err))
 		return
 	}
-	userIdStr := chi.URLParam(r, "userId")
-	userId, err := uuid.Parse(userIdStr)
 
-	if err != nil {
-		respondWithError(w, http.StatusBadRequest, fmt.Sprintf("invalid seminar id %v", err))
-		return
-	}
 
 	question, err := apiCfg.DB.CreateQuestion(r.Context(), database.CreateQuestionParams{
 		ID:        uuid.New(),
 		CreatedAt: time.Now().UTC(),
 		UpdatedAt: time.Now().UTC(),
-		UserID:    userId,
 		SeminarID: seminarId,
 		Question:  params.Question,
 	})
