@@ -78,6 +78,9 @@ func (apiCfg apiConfig) handlerCreateUsers(w http.ResponseWriter, r *http.Reques
 	respondWithJson(w, 200, response)
 }
 
+
+
+
 // Login User
 func (apiCfg apiConfig) handlerLoginUser(w http.ResponseWriter, r *http.Request) {
 	type parameters struct {
@@ -93,7 +96,7 @@ func (apiCfg apiConfig) handlerLoginUser(w http.ResponseWriter, r *http.Request)
 	}
 	email, err := apiCfg.DB.GetUserEmail(r.Context(), params.Email)
 	if err != nil {
-		respondWithError(w, http.StatusNotFound, fmt.Sprintf("email does not exist:%v", err))
+		respondWithError(w, http.StatusNotFound, fmt.Sprintf("email does not exist"))
 		return
 	}
 	err = bcrypt.CompareHashAndPassword([]byte(email.Password), []byte(params.Password))
@@ -113,15 +116,15 @@ func (apiCfg apiConfig) handlerLoginUser(w http.ResponseWriter, r *http.Request)
 	}
 	response := map[string]interface{}{
 		"user":  databaseUserToUser(email),
-		"token": accessToken,
+		"accessToken": accessToken,
 	}
 	http.SetCookie(w, &http.Cookie{
-		Name:     "refresh_token",
+		Name:     "jwt",
 		Value:    refreshToken,
 		Expires:  time.Now().Add(7 * 24 * time.Hour),
 		HttpOnly: true,
+		SameSite: http.SameSiteNoneMode,
 		Secure:   true,
-		Path:     "/",
 	})
 	respondWithJson(w, 200, response)
 }
