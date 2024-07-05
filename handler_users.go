@@ -78,9 +78,6 @@ func (apiCfg apiConfig) handlerCreateUsers(w http.ResponseWriter, r *http.Reques
 	respondWithJson(w, 200, response)
 }
 
-
-
-
 // Login User
 func (apiCfg apiConfig) handlerLoginUser(w http.ResponseWriter, r *http.Request) {
 	type parameters struct {
@@ -115,7 +112,7 @@ func (apiCfg apiConfig) handlerLoginUser(w http.ResponseWriter, r *http.Request)
 		return
 	}
 	response := map[string]interface{}{
-		"user":  databaseUserToUser(email),
+		"user":        databaseUserToUser(email),
 		"accessToken": accessToken,
 	}
 	http.SetCookie(w, &http.Cookie{
@@ -142,4 +139,19 @@ func generateJWT(userID string, expirationTime time.Duration, secret string) (st
 	}
 
 	return tokenString, nil
+}
+
+func (apiCfg apiConfig) haandleLogoutUser(w http.ResponseWriter, r *http.Request) {
+	_, err := r.Cookie("jwt")
+	if err != nil {
+		respondWithError(w, http.StatusNoContent, "")
+		return
+	}
+	http.SetCookie(w, &http.Cookie{
+		Name:     "jwt",
+		Value:    "",
+		MaxAge:   -1,
+		HttpOnly: true,
+	})
+	respondWithJson(w, http.StatusNoContent, "logout successful")
 }

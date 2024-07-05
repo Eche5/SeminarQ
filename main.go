@@ -67,6 +67,7 @@ func main() {
 	v1Router.Get("/question/{seminarId}", apiCfg.handlerGetAllQuestions)
 
 	v1Router.Post("/login", apiCfg.handlerLoginUser)
+	v1Router.Post("/logout", apiCfg.haandleLogoutUser)
 
 	router.Mount("/v1", v1Router)
 
