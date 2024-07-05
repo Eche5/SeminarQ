@@ -14,20 +14,17 @@ import (
 	"github.com/gorilla/websocket"
 )
 
-// Define a structure to hold active WebSocket connections
 type WebSocketManager struct {
 	connections map[*websocket.Conn]bool
 	lock        sync.Mutex
 }
 
-// Create a new WebSocket manager
 var wsManager = WebSocketManager{
 	connections: make(map[*websocket.Conn]bool),
 }
 
 var upgrader = websocket.Upgrader{
 	CheckOrigin: func(r *http.Request) bool {
-		// Allow all connections (for demo purposes)
 		return true
 	},
 }
@@ -64,7 +61,6 @@ func (apiCfg apiConfig) handlerCreateQuestion(w http.ResponseWriter, r *http.Req
 		return
 	}
 
-	// Broadcast the new question to all active WebSocket connections
 	broadcastQuestion(question)
 
 	respondWithJson(w, http.StatusCreated, databaseQuestionToQuestion(question))
@@ -92,13 +88,11 @@ func (apiCfg apiConfig) handlerGetAllQuestions(w http.ResponseWriter, r *http.Re
 	}
 
 
-	// Check if the request is a WebSocket upgrade request
 	if websocket.IsWebSocketUpgrade(r) {
 		handleWebSocket(apiCfg, w, r, seminarId)
 		return
 	}
 
-	// Handle normal HTTP GET request
 	questions, err := apiCfg.DB.GetAllQuestion(r.Context(), seminarId)
 	if err != nil {
 		respondWithError(w, http.StatusBadRequest, fmt.Sprintf("error:%v", err))
@@ -114,20 +108,17 @@ func handleWebSocket(apiCfg apiConfig, w http.ResponseWriter, r *http.Request, s
 		return
 	}
 
-	// Register the new connection
 	wsManager.lock.Lock()
 	wsManager.connections[conn] = true
 	wsManager.lock.Unlock()
 
 	defer func() {
-		// Unregister the connection on close
 		wsManager.lock.Lock()
 		delete(wsManager.connections, conn)
 		wsManager.lock.Unlock()
 		conn.Close()
 	}()
 
-	// Send initial data to client
 	questions, err := apiCfg.DB.GetAllQuestion(r.Context(),seminarId)
 	if err != nil {
 		log.Println(err)
@@ -139,7 +130,6 @@ func handleWebSocket(apiCfg apiConfig, w http.ResponseWriter, r *http.Request, s
 		return
 	}
 
-	// Listen for incoming messages from client
 	for {
 		_, _, err := conn.ReadMessage()
 		if err != nil {
