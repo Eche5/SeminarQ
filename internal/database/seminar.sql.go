@@ -46,6 +46,15 @@ func (q *Queries) CreateSeminar(ctx context.Context, arg CreateSeminarParams) (S
 	return i, err
 }
 
+const deleteSeminar = `-- name: DeleteSeminar :exec
+DELETE FROM seminar WHERE id = $1
+`
+
+func (q *Queries) DeleteSeminar(ctx context.Context, id uuid.UUID) error {
+	_, err := q.db.ExecContext(ctx, deleteSeminar, id)
+	return err
+}
+
 const getAllSeminars = `-- name: GetAllSeminars :many
 SELECT id, created_at, updated_at, name, api_key, user_id FROM seminar WHERE user_id = $1
 `

@@ -76,3 +76,18 @@ func (apiCfg apiConfig) handlerGetSeminarByAPIKey(w http.ResponseWriter, r *http
 
 	respondWithJson(w, http.StatusOK, result)
 }
+
+func (apiCfg apiConfig) handlerDeleteSeminar(w http.ResponseWriter, r *http.Request) {
+	seminadIdStr := chi.URLParam(r, "seminarId")
+	seminarId, err := uuid.Parse(seminadIdStr)
+	if err != nil {
+		respondWithError(w, http.StatusBadRequest, fmt.Sprintf("invalid user id %v", err))
+		return
+	}
+
+	err = apiCfg.DB.DeleteSeminar(r.Context(), seminarId)
+	if err != nil {
+		respondWithError(w, http.StatusBadRequest, fmt.Sprintf("error:%v", err))
+	}
+	respondWithJson(w, http.StatusNoContent, struct{}{})
+}

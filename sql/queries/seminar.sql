@@ -8,3 +8,6 @@ SELECT * FROM seminar WHERE user_id = $1;
 
 -- name: GetAllSeminarsByAPIKey :many
 SELECT * FROM seminar WHERE api_key = $1;
+
+-- name: DeleteSeminar :exec
+DELETE FROM seminar WHERE id = $1;

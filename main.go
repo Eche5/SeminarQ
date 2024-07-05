@@ -22,7 +22,6 @@ type apiConfig struct {
 
 func main() {
 
-	
 	godotenv.Load(".env")
 	portString := os.Getenv("PORT")
 	if portString == "" {
@@ -45,7 +44,7 @@ func main() {
 	router := chi.NewRouter()
 
 	router.Use(cors.Handler(cors.Options{
-		AllowedOrigins:   []string{"https://*", "http://*","https://queryhub.adaptable.app"},
+		AllowedOrigins:   []string{"https://*", "http://*", "https://queryhub.adaptable.app"},
 		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
 		AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type", "X-CSRF-Token"},
 		ExposedHeaders:   []string{"Link"},
@@ -59,14 +58,13 @@ func main() {
 	v1Router.Get("/refresh-token", apiCfg.handlerRefreshToken)
 	v1Router.Get("/seminar/{apiKey}", apiCfg.handlerGetSeminarByAPIKey)
 
-	
 	v1Router.Post("/users", apiCfg.handlerCreateUsers)
 	v1Router.Post("/seminar", apiCfg.handlerCreateSeminar)
 	v1Router.Get("/seminars/{userId}", apiCfg.handlerGetAllSeminars)
+	v1Router.Delete("/seminar/{seminarId}", apiCfg.handlerDeleteSeminar)
 
 	v1Router.Post("/question/{seminarId}", apiCfg.handlerCreateQuestion)
 	v1Router.Get("/question/{seminarId}", apiCfg.handlerGetAllQuestions)
-
 
 	v1Router.Post("/login", apiCfg.handlerLoginUser)
 
