@@ -142,16 +142,21 @@ func generateJWT(userID string, expirationTime time.Duration, secret string) (st
 }
 
 func (apiCfg apiConfig) haandleLogoutUser(w http.ResponseWriter, r *http.Request) {
-	_, err := r.Cookie("jwt")
+_, err := r.Cookie("jwt")
 	if err != nil {
 		respondWithError(w, http.StatusNoContent, "")
 		return
 	}
+	
+	// Invalidate the cookie by setting a past expiration date
 	http.SetCookie(w, &http.Cookie{
 		Name:     "jwt",
 		Value:    "",
-		MaxAge:   -1,
+		Expires:  time.Now().Add(-1 * time.Hour),
 		HttpOnly: true,
+		SameSite: http.SameSiteNoneMode, // Ensure SameSite is consistent with login cookie settings
+		Secure:   true,                  // Ensure Secure is consistent with login cookie settings
 	})
-	respondWithJson(w, http.StatusNoContent, "logout successful")
+
+	respondWithJson(w, http.StatusNoContent, "")
 }
