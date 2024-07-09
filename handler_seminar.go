@@ -91,3 +91,59 @@ func (apiCfg apiConfig) handlerDeleteSeminar(w http.ResponseWriter, r *http.Requ
 	}
 	respondWithJson(w, http.StatusNoContent, struct{}{})
 }
+
+func (apiCfg apiConfig) handlerUpdateSeminarName(w http.ResponseWriter, r *http.Request) {
+	seminarIdStr := chi.URLParam(r, "seminarId")
+	seminarId, err := uuid.Parse(seminarIdStr)
+	if err != nil {
+		respondWithError(w, http.StatusBadRequest, fmt.Sprintf("invalid seminar id %v", err))
+		return
+	}
+	type parameters struct {
+		Name string `json:"name"`
+	}
+	decoder := json.NewDecoder(r.Body)
+	params := parameters{}
+	err = decoder.Decode(&params)
+	if err != nil {
+		respondWithError(w, 400, fmt.Sprintf("error parsing json:%v", err))
+		return
+	}
+
+	updatedSeminar, err := apiCfg.DB.EditSeminarName(r.Context(), database.EditSeminarNameParams{
+		ID:        seminarId,
+		Name:      params.Name,
+		UpdatedAt: time.Now().UTC(),
+	})
+	if err != nil {
+		respondWithError(w, http.StatusNotFound, fmt.Sprintf("Something went wrong: %v", err))
+	}
+
+	respondWithJson(w, http.StatusOK, databaseSeminarToSeminar(updatedSeminar))
+}
+
+func (apiCfg apiConfig) handlerGetSeminarByName(w http.ResponseWriter, r *http.Request) {
+
+	seminarNameStr := chi.URLParam(r, "seminarName")
+	userIdStr := chi.URLParam(r, "userId")
+	userId, err := uuid.Parse(userIdStr)
+
+	if err != nil {
+		respondWithError(w, http.StatusBadRequest, fmt.Sprintf("invalid user id %v", err))
+		return
+	}
+	seminar, err := apiCfg.DB.GetSeminarByName(r.Context(), database.GetSeminarByNameParams{
+		Name:   seminarNameStr,
+		UserID: userId,
+	})
+	if err != nil {
+		respondWithError(w, http.StatusNotFound, fmt.Sprintf("Something went wrong: %v", err))
+	}
+
+	var result []Seminar
+	for _, seminar := range seminar {
+		result = append(result, databaseSeminarToSeminar(seminar))
+	}
+
+	respondWithJson(w, http.StatusOK, result)
+}

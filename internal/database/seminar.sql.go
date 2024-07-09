@@ -55,6 +55,33 @@ func (q *Queries) DeleteSeminar(ctx context.Context, id uuid.UUID) error {
 	return err
 }
 
+const editSeminarName = `-- name: EditSeminarName :one
+UPDATE seminar
+SET name = $2, updated_at = $3
+WHERE id = $1
+RETURNING id, created_at, updated_at, name, api_key, user_id
+`
+
+type EditSeminarNameParams struct {
+	ID        uuid.UUID
+	Name      string
+	UpdatedAt time.Time
+}
+
+func (q *Queries) EditSeminarName(ctx context.Context, arg EditSeminarNameParams) (Seminar, error) {
+	row := q.db.QueryRowContext(ctx, editSeminarName, arg.ID, arg.Name, arg.UpdatedAt)
+	var i Seminar
+	err := row.Scan(
+		&i.ID,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.Name,
+		&i.ApiKey,
+		&i.UserID,
+	)
+	return i, err
+}
+
 const getAllSeminars = `-- name: GetAllSeminars :many
 SELECT id, created_at, updated_at, name, api_key, user_id FROM seminar WHERE user_id = $1
 `
@@ -95,6 +122,45 @@ SELECT id, created_at, updated_at, name, api_key, user_id FROM seminar WHERE api
 
 func (q *Queries) GetAllSeminarsByAPIKey(ctx context.Context, apiKey string) ([]Seminar, error) {
 	rows, err := q.db.QueryContext(ctx, getAllSeminarsByAPIKey, apiKey)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Seminar
+	for rows.Next() {
+		var i Seminar
+		if err := rows.Scan(
+			&i.ID,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.Name,
+			&i.ApiKey,
+			&i.UserID,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getSeminarByName = `-- name: GetSeminarByName :many
+SELECT id, created_at, updated_at, name, api_key, user_id FROM seminar WHERE name LIKE $1 and user_id = $2
+`
+
+type GetSeminarByNameParams struct {
+	Name   string
+	UserID uuid.UUID
+}
+
+func (q *Queries) GetSeminarByName(ctx context.Context, arg GetSeminarByNameParams) ([]Seminar, error) {
+	rows, err := q.db.QueryContext(ctx, getSeminarByName, arg.Name, arg.UserID)
 	if err != nil {
 		return nil, err
 	}

@@ -11,3 +11,13 @@ SELECT * FROM seminar WHERE api_key = $1;
 
 -- name: DeleteSeminar :exec
 DELETE FROM seminar WHERE id = $1;
+
+-- name: EditSeminarName :one
+UPDATE seminar
+SET name = $2, updated_at = $3
+WHERE id = $1
+RETURNING *;
+
+
+-- name: GetSeminarByName :many
+SELECT * FROM seminar WHERE name LIKE $1 and user_id = $2;

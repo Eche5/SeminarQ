@@ -61,6 +61,9 @@ func main() {
 	v1Router.Post("/users", apiCfg.handlerCreateUsers)
 	v1Router.Post("/seminar", apiCfg.handlerCreateSeminar)
 	v1Router.Get("/seminars/{userId}", apiCfg.handlerGetAllSeminars)
+	v1Router.Put("/seminar/{seminarId}", apiCfg.handlerUpdateSeminarName)
+	v1Router.Get("/seminar/{userId}/{seminarName}", apiCfg.handlerGetSeminarByName)
+
 	v1Router.Delete("/seminar/{seminarId}", apiCfg.handlerDeleteSeminar)
 
 	v1Router.Post("/question/{seminarId}", apiCfg.handlerCreateQuestion)
