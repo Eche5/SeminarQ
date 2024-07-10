@@ -34,6 +34,7 @@ type Seminar struct {
 	Name      string    `json:"name"`
 	ApiKey    string    `json:"api_key"`
 	UserID    uuid.UUID `json:"user_id"`
+	ExpiryDate time.Time `json:"expiry_date"`
 }
 
 func databaseSeminarToSeminar(dbBase database.Seminar) Seminar {
@@ -44,6 +45,7 @@ func databaseSeminarToSeminar(dbBase database.Seminar) Seminar {
 		Name:      dbBase.Name,
 		ApiKey:    dbBase.ApiKey,
 		UserID:    dbBase.UserID,
+		ExpiryDate: dbBase.ExpiryDate,
 	}
 }
 

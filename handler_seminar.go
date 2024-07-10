@@ -1,14 +1,17 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
 	"time"
 
 	"github.com/Eche5/SeminarQ/internal/database"
 	"github.com/go-chi/chi"
 	"github.com/google/uuid"
+	"github.com/robfig/cron/v3"
 )
 
 func (apiCfg apiConfig) handlerCreateSeminar(w http.ResponseWriter, r *http.Request) {
@@ -146,4 +149,24 @@ func (apiCfg apiConfig) handlerGetSeminarByName(w http.ResponseWriter, r *http.R
 	}
 
 	respondWithJson(w, http.StatusOK, result)
+}
+
+func (apiCfg apiConfig) startCronJobs() {
+	c := cron.New()
+
+	// Schedule the job to run every hour
+	_, err := c.AddFunc("@hourly", func() {
+		err := apiCfg.DB.DeleteAfterTwoDays(context.Background())
+		if err != nil {
+			log.Printf("Failed to delete expired seminars: %v", err)
+		} else {
+			log.Println("Expired seminars deleted successfully.")
+		}
+	})
+
+	if err != nil {
+		log.Fatalf("Error scheduling cron job: %v", err)
+	}
+
+	c.Start()
 }

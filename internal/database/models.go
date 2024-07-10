@@ -19,12 +19,13 @@ type Question struct {
 }
 
 type Seminar struct {
-	ID        uuid.UUID
-	CreatedAt time.Time
-	UpdatedAt time.Time
-	Name      string
-	ApiKey    string
-	UserID    uuid.UUID
+	ID         uuid.UUID
+	CreatedAt  time.Time
+	UpdatedAt  time.Time
+	Name       string
+	ApiKey     string
+	UserID     uuid.UUID
+	ExpiryDate time.Time
 }
 
 type User struct {

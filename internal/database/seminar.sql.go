@@ -13,17 +13,18 @@ import (
 )
 
 const createSeminar = `-- name: CreateSeminar :one
-INSERT INTO seminar (id, created_at, updated_at, name, user_id)
-VALUES ($1, $2, $3, $4, $5)
-RETURNING id, created_at, updated_at, name, api_key, user_id
+INSERT INTO seminar (id, created_at, updated_at, name, user_id,expiry_date)
+VALUES ($1, $2, $3, $4, $5, $6)
+RETURNING id, created_at, updated_at, name, api_key, user_id, expiry_date
 `
 
 type CreateSeminarParams struct {
-	ID        uuid.UUID
-	CreatedAt time.Time
-	UpdatedAt time.Time
-	Name      string
-	UserID    uuid.UUID
+	ID         uuid.UUID
+	CreatedAt  time.Time
+	UpdatedAt  time.Time
+	Name       string
+	UserID     uuid.UUID
+	ExpiryDate time.Time
 }
 
 func (q *Queries) CreateSeminar(ctx context.Context, arg CreateSeminarParams) (Seminar, error) {
@@ -33,6 +34,7 @@ func (q *Queries) CreateSeminar(ctx context.Context, arg CreateSeminarParams) (S
 		arg.UpdatedAt,
 		arg.Name,
 		arg.UserID,
+		arg.ExpiryDate,
 	)
 	var i Seminar
 	err := row.Scan(
@@ -42,8 +44,19 @@ func (q *Queries) CreateSeminar(ctx context.Context, arg CreateSeminarParams) (S
 		&i.Name,
 		&i.ApiKey,
 		&i.UserID,
+		&i.ExpiryDate,
 	)
 	return i, err
+}
+
+const deleteAfterTwoDays = `-- name: DeleteAfterTwoDays :exec
+DELETE FROM seminar
+WHERE expiry_date <= NOW()
+`
+
+func (q *Queries) DeleteAfterTwoDays(ctx context.Context) error {
+	_, err := q.db.ExecContext(ctx, deleteAfterTwoDays)
+	return err
 }
 
 const deleteSeminar = `-- name: DeleteSeminar :exec
@@ -59,7 +72,7 @@ const editSeminarName = `-- name: EditSeminarName :one
 UPDATE seminar
 SET name = $2, updated_at = $3
 WHERE id = $1
-RETURNING id, created_at, updated_at, name, api_key, user_id
+RETURNING id, created_at, updated_at, name, api_key, user_id, expiry_date
 `
 
 type EditSeminarNameParams struct {
@@ -78,12 +91,13 @@ func (q *Queries) EditSeminarName(ctx context.Context, arg EditSeminarNameParams
 		&i.Name,
 		&i.ApiKey,
 		&i.UserID,
+		&i.ExpiryDate,
 	)
 	return i, err
 }
 
 const getAllSeminars = `-- name: GetAllSeminars :many
-SELECT id, created_at, updated_at, name, api_key, user_id FROM seminar WHERE user_id = $1
+SELECT id, created_at, updated_at, name, api_key, user_id, expiry_date FROM seminar WHERE user_id = $1
 `
 
 func (q *Queries) GetAllSeminars(ctx context.Context, userID uuid.UUID) ([]Seminar, error) {
@@ -102,6 +116,7 @@ func (q *Queries) GetAllSeminars(ctx context.Context, userID uuid.UUID) ([]Semin
 			&i.Name,
 			&i.ApiKey,
 			&i.UserID,
+			&i.ExpiryDate,
 		); err != nil {
 			return nil, err
 		}
@@ -117,7 +132,7 @@ func (q *Queries) GetAllSeminars(ctx context.Context, userID uuid.UUID) ([]Semin
 }
 
 const getAllSeminarsByAPIKey = `-- name: GetAllSeminarsByAPIKey :many
-SELECT id, created_at, updated_at, name, api_key, user_id FROM seminar WHERE api_key = $1
+SELECT id, created_at, updated_at, name, api_key, user_id, expiry_date FROM seminar WHERE api_key = $1
 `
 
 func (q *Queries) GetAllSeminarsByAPIKey(ctx context.Context, apiKey string) ([]Seminar, error) {
@@ -136,6 +151,7 @@ func (q *Queries) GetAllSeminarsByAPIKey(ctx context.Context, apiKey string) ([]
 			&i.Name,
 			&i.ApiKey,
 			&i.UserID,
+			&i.ExpiryDate,
 		); err != nil {
 			return nil, err
 		}
@@ -151,7 +167,7 @@ func (q *Queries) GetAllSeminarsByAPIKey(ctx context.Context, apiKey string) ([]
 }
 
 const getSeminarByName = `-- name: GetSeminarByName :many
-SELECT id, created_at, updated_at, name, api_key, user_id FROM seminar WHERE name LIKE $1 and user_id = $2
+SELECT id, created_at, updated_at, name, api_key, user_id, expiry_date FROM seminar WHERE name LIKE $1 and user_id = $2
 `
 
 type GetSeminarByNameParams struct {
@@ -175,6 +191,7 @@ func (q *Queries) GetSeminarByName(ctx context.Context, arg GetSeminarByNamePara
 			&i.Name,
 			&i.ApiKey,
 			&i.UserID,
+			&i.ExpiryDate,
 		); err != nil {
 			return nil, err
 		}

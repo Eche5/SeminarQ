@@ -1,6 +1,6 @@
 -- name: CreateSeminar :one
-INSERT INTO seminar (id, created_at, updated_at, name, user_id)
-VALUES ($1, $2, $3, $4, $5)
+INSERT INTO seminar (id, created_at, updated_at, name, user_id,expiry_date)
+VALUES ($1, $2, $3, $4, $5, $6)
 RETURNING *;
 
 -- name: GetAllSeminars :many
@@ -21,3 +21,7 @@ RETURNING *;
 
 -- name: GetSeminarByName :many
 SELECT * FROM seminar WHERE name LIKE $1 and user_id = $2;
+
+-- name: DeleteAfterTwoDays :exec
+DELETE FROM seminar
+WHERE expiry_date <= NOW();

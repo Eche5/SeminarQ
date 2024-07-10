@@ -40,6 +40,7 @@ func main() {
 	apiCfg := apiConfig{
 		DB: database.New(conn),
 	}
+    apiCfg.startCronJobs()
 
 	router := chi.NewRouter()
 
