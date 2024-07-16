@@ -49,7 +49,7 @@ func (apiCfg apiConfig) handlerCreateUsers(w http.ResponseWriter, r *http.Reques
 		Password:  string(hashedPassword),
 	})
 	if err != nil {
-		respondWithError(w, 400, fmt.Sprintf("cannot create user:%v", err))
+		respondWithError(w, 400, fmt.Sprintf("%v", err))
 		return
 	}
 
