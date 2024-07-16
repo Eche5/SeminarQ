@@ -13,18 +13,17 @@ import (
 )
 
 const createSeminar = `-- name: CreateSeminar :one
-INSERT INTO seminar (id, created_at, updated_at, name, user_id,expiry_date)
-VALUES ($1, $2, $3, $4, $5, $6)
+INSERT INTO seminar (id, created_at, updated_at, name, user_id)
+VALUES ($1, $2, $3, $4, $5)
 RETURNING id, created_at, updated_at, name, api_key, user_id, expiry_date
 `
 
 type CreateSeminarParams struct {
-	ID         uuid.UUID
-	CreatedAt  time.Time
-	UpdatedAt  time.Time
-	Name       string
-	UserID     uuid.UUID
-	ExpiryDate time.Time
+	ID        uuid.UUID
+	CreatedAt time.Time
+	UpdatedAt time.Time
+	Name      string
+	UserID    uuid.UUID
 }
 
 func (q *Queries) CreateSeminar(ctx context.Context, arg CreateSeminarParams) (Seminar, error) {
@@ -34,7 +33,6 @@ func (q *Queries) CreateSeminar(ctx context.Context, arg CreateSeminarParams) (S
 		arg.UpdatedAt,
 		arg.Name,
 		arg.UserID,
-		arg.ExpiryDate,
 	)
 	var i Seminar
 	err := row.Scan(
