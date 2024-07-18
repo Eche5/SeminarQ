@@ -155,7 +155,7 @@ func (apiCfg apiConfig) startCronJobs() {
 	c := cron.New()
 
 	// Schedule the job to run every hour
-	_, err := c.AddFunc("@hourly", func() {
+	_, err := c.AddFunc("*/2 * * * *", func() {
 		err := apiCfg.DB.DeleteAfterTwoDays(context.Background())
 		if err != nil {
 			log.Printf("Failed to delete expired seminars: %v", err)
